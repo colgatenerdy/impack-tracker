@@ -382,8 +382,17 @@ elif st.session_state.step == 3:
     from io import BytesIO
     from datetime import date as date_type
 
-    plt.rc('font', family='Malgun Gothic')
-    plt.rcParams['axes.unicode_minus'] = False
+    import matplotlib.font_manager as fm
+
+# OS에 따라 한글 폰트 자동 선택 (로컬: 맑은 고딕, 서버: 나눔고딕)
+font_candidates = ['Malgun Gothic', 'NanumGothic', 'NanumBarunGothic', 'AppleGothic']
+available_fonts = [f.name for f in fm.fontManager.ttflist]
+for font in font_candidates:
+    if font in available_fonts:
+        plt.rc('font', family=font)
+        break
+
+plt.rcParams['axes.unicode_minus'] = False
 
     d_day = pd.Timestamp(st.session_state.d_day)
 
