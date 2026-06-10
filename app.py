@@ -383,15 +383,38 @@ elif st.session_state.step == 3:
     from datetime import date as date_type
 
     import matplotlib.font_manager as fm
+    import os
 
-    # OS에 따라 한글 폰트 자동 선택 (로컬: 맑은 고딕, 서버: 나눔고딕)
-    font_candidates = ['Malgun Gothic', 'NanumGothic', 'NanumBarunGothic', 'AppleGothic']
-    available_fonts = [f.name for f in fm.fontManager.ttflist]
+    # Streamlit Cloud용 한글 폰트 직접 등록
+    # packages.txt로 깐 NanumGothic 경로를 강제로 지정
+    nanum_paths = [
+        '/usr/share/fonts/truetype/nanum/NanumGothic.ttf',
+        '/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf',
+    ]
+    for path in nanum_paths:
+        if os.path.exists(path):
+            fm.fontManager.addfont(path)
+    
+    # 폰트 캐시 강제 재구축
+    try:
+        fm._load_fontmanager(try_read_cache=False)
+    except Exception:
+        pass
+    
+    # 사용 가능한 폰트 중 한글 폰트 선택
+    font_candidates = ['NanumGothic', 'NanumBarunGothic', 'Malgun Gothic', 'AppleGothic']
+    available_fonts = {f.name for f in fm.fontManager.ttflist}
+    
+    selected_font = None
     for font in font_candidates:
         if font in available_fonts:
-            plt.rc('font', family=font)
+            selected_font = font
             break
-
+    
+    if selected_font:
+        plt.rcParams['font.family'] = selected_font
+        plt.rcParams['font.sans-serif'] = [selected_font]
+    
     plt.rcParams['axes.unicode_minus'] = False
 
     d_day = pd.Timestamp(st.session_state.d_day)
